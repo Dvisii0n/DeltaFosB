@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://cof1ny3ybx3ix"]
+
+[ext_resource type="Script" uid="uid://du6mvt4fy3wgt" path="res://scripts/weapons/hitscan_weapon.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/effects/impact_marker.tscn" id="2_impact"]
+[ext_resource type="PackedScene" uid="uid://bgy62n1umxcxk" path="res://assets/arms/pistolArm.glb" id="3_arm"]
+[ext_resource type="PackedScene" uid="uid://biuaqu8r0yumj" path="res://assets/weapons/firearms/pistol.glb" id="4_gun"]
+[ext_resource type="Script" uid="uid://dwolq56grtq2e" path="res://scripts/player/arm_view.gd" id="5_armview"]
+
+[node name="Pistol" type="Node3D" unique_id=861270612]
+script = ExtResource("1_script")
+impact_scene = ExtResource("2_impact")
+weapon_name = "Pistol"
+damage = 20.0
+ammo_type = "light"
+recoil_kick = 0.06
+recoil_pitch = 6.0
+recoil_recover = 14.0
+
+[node name="Visual" type="Node3D" parent="." unique_id=2108325848]
+transform = Transform3D(1.9852406, -0.026605725, 0.24105553, 0.02019149, 1.9991581, 0.054358147, -0.24167804, -0.05152258, 1.9846752, 0.3511066, -0.31321254, -0.48141676)
+
+[node name="Arm" parent="Visual" unique_id=1369602989 instance=ExtResource("3_arm")]
+script = ExtResource("5_armview")
+idle_animation = "pistol_idle"
+attack_animation = "pistol_trigger"
+
+[node name="Grip" type="BoneAttachment3D" parent="Visual" unique_id=443026880]
+transform = Transform3D(1.0000001, 8.940697e-08, 1.1455268e-07, -9.8953024e-08, -0.052335866, 0.9986295, -2.9802322e-08, -0.99862957, -0.05233594, -0.0040000062, -0.0119999945, -0.04099989)
+bone_name = "grip.R"
+bone_idx = 17
+use_external_skeleton = true
+external_skeleton = NodePath("../Arm/PistolArmRig/Skeleton3D")
+
+[node name="GunModel" parent="Visual/Grip" unique_id=1646518723 instance=ExtResource("4_gun")]
+transform = Transform3D(1.0000007, -1.1175871e-08, 4.4703484e-08, 0, 0, -1.0000002, 4.656613e-09, 1, 7.450581e-09, 0.008016005, -0.0009673536, -0.00014691055)
+script = ExtResource("5_armview")
+idle_animation = ""
+attack_animation = "fire"

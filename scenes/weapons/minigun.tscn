@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/hitscan_weapon.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/effects/impact_marker.tscn" id="2_impact"]
+
+[sub_resource type="StandardMaterial3D" id="MatBody"]
+albedo_color = Color(0.35, 0.4, 0.35, 1)
+
+[sub_resource type="BoxMesh" id="MeshBody"]
+material = SubResource("MatBody")
+size = Vector3(0.22, 0.22, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="MatBarrel"]
+albedo_color = Color(0.15, 0.15, 0.15, 1)
+
+[sub_resource type="BoxMesh" id="MeshBarrel"]
+material = SubResource("MatBarrel")
+size = Vector3(0.14, 0.14, 0.5)
+
+[node name="Minigun" type="Node3D" node_paths=PackedStringArray("spin_node")]
+script = ExtResource("1_script")
+weapon_name = "Minigun"
+slot = 3
+damage = 7.0
+fire_interval = 0.05
+automatic = true
+ammo_type = "heavy"
+recoil_kick = 0.03
+spread_deg = 2.0
+max_range = 150.0
+impact_scene = ExtResource("2_impact")
+spin_up_time = 0.5
+spin_node = NodePath("Visual/Barrel")
+
+[node name="Visual" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, -0.3, -0.5)
+mesh = SubResource("MeshBody")
+
+[node name="Barrel" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.45)
+mesh = SubResource("MeshBarrel")

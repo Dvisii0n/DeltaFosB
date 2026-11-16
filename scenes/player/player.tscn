@@ -1,0 +1,86 @@
+[gd_scene format=3 uid="uid://5c35kg2u85pt"]
+
+[ext_resource type="Script" uid="uid://bgaq35by0ecll" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="Script" uid="uid://yxr26pci0etj" path="res://scripts/weapons/weapon_holder.gd" id="2_holder"]
+[ext_resource type="PackedScene" uid="uid://cgbfwi6motqnm" path="res://scenes/weapons/pencil.tscn" id="3_pencil"]
+[ext_resource type="PackedScene" uid="uid://cof1ny3ybx3ix" path="res://scenes/weapons/pistol.tscn" id="4_pistol"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/shotgun.tscn" id="5_shotgun"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/minigun.tscn" id="6_minigun"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
+
+[sub_resource type="CapsuleShape3D" id="ShapeBody"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="MatPlayer"]
+albedo_color = Color(0.2, 0.4, 0.9, 1)
+
+[sub_resource type="CapsuleMesh" id="MeshPlayer"]
+material = SubResource("MatPlayer")
+radius = 0.4
+height = 1.8
+
+[node name="Player" type="CharacterBody3D" unique_id=92689439]
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=10322548]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("ShapeBody")
+
+[node name="Visual" type="MeshInstance3D" parent="." unique_id=1270129358]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+visible = false
+mesh = SubResource("MeshPlayer")
+
+[node name="Head" type="Node3D" parent="." unique_id=1084624247]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=2050970493]
+current = true
+fov = 90.0
+
+[node name="WeaponHolder" type="Node3D" parent="Head/Camera3D" unique_id=571941363]
+script = ExtResource("2_holder")
+
+[node name="Pencil" parent="Head/Camera3D/WeaponHolder" unique_id=551865437 instance=ExtResource("3_pencil")]
+
+[node name="Pistol" parent="Head/Camera3D/WeaponHolder" unique_id=2120340176 instance=ExtResource("4_pistol")]
+
+[node name="Shotgun" parent="Head/Camera3D/WeaponHolder" unique_id=439580221 instance=ExtResource("5_shotgun")]
+
+[node name="Minigun" parent="Head/Camera3D/WeaponHolder" unique_id=516673737 instance=ExtResource("6_minigun")]
+
+[node name="DebugHUD" type="CanvasLayer" parent="." unique_id=469531989]
+
+[node name="Crosshair" type="Label" parent="DebugHUD" unique_id=1978440882]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+theme_override_font_sizes/font_size = 24
+text = "+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WeaponLabel" type="Label" parent="DebugHUD" unique_id=1084791105]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 616.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 20
+text = "Weapon"
+
+[node name="SpeedLabel" type="Label" parent="DebugHUD" unique_id=639875588]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 416.0
+offset_bottom = 48.0
+theme_override_font_sizes/font_size = 20
+text = "Speed: 0.0 m/s | State: AIR"
+
+[node name="PauseMenu" parent="." unique_id=157080777 instance=ExtResource("7_pause")]

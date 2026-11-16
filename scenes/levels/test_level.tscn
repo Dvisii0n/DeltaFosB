@@ -1,0 +1,197 @@
+[gd_scene format=3 uid="uid://dwkdjw3qo2s5i"]
+
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/target_dummy.tscn" id="2_dummy"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
+sky_horizon_color = Color(0.66, 0.67, 0.69, 1)
+ground_horizon_color = Color(0.66, 0.67, 0.69, 1)
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+ambient_light_source = 3
+ambient_light_color = Color(0.5, 0.5, 0.5, 1)
+tonemap_mode = 2
+
+[sub_resource type="BoxShape3D" id="ShapeFloor"]
+size = Vector3(40, 1, 40)
+
+[sub_resource type="StandardMaterial3D" id="MatFloor"]
+albedo_color = Color(0.25, 0.25, 0.27, 1)
+
+[sub_resource type="BoxMesh" id="MeshFloor"]
+material = SubResource("MatFloor")
+size = Vector3(40, 1, 40)
+
+[sub_resource type="BoxShape3D" id="ShapeWallNS"]
+size = Vector3(42, 6, 1)
+
+[sub_resource type="StandardMaterial3D" id="MatWall"]
+albedo_color = Color(0.7, 0.7, 0.72, 1)
+
+[sub_resource type="BoxMesh" id="MeshWallNS"]
+material = SubResource("MatWall")
+size = Vector3(42, 6, 1)
+
+[sub_resource type="BoxShape3D" id="ShapeWallEW"]
+size = Vector3(1, 6, 40)
+
+[sub_resource type="BoxMesh" id="MeshWallEW"]
+material = SubResource("MatWall")
+size = Vector3(1, 6, 40)
+
+[sub_resource type="BoxShape3D" id="ShapeBoxLow"]
+size = Vector3(2, 1, 2)
+
+[sub_resource type="StandardMaterial3D" id="MatObstacle"]
+albedo_color = Color(0.95, 0.5, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="MeshBoxLow"]
+material = SubResource("MatObstacle")
+size = Vector3(2, 1, 2)
+
+[sub_resource type="BoxShape3D" id="ShapeBoxMid"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxMesh" id="MeshBoxMid"]
+material = SubResource("MatObstacle")
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="ShapeBoxHigh"]
+size = Vector3(3, 4, 3)
+
+[sub_resource type="BoxMesh" id="MeshBoxHigh"]
+material = SubResource("MatObstacle")
+size = Vector3(3, 4, 3)
+
+[sub_resource type="BoxShape3D" id="ShapePillar"]
+size = Vector3(1, 6, 1)
+
+[sub_resource type="BoxMesh" id="MeshPillar"]
+material = SubResource("MatObstacle")
+size = Vector3(1, 6, 1)
+
+[sub_resource type="BoxShape3D" id="ShapeRamp"]
+size = Vector3(4, 0.5, 8)
+
+[sub_resource type="BoxMesh" id="MeshRamp"]
+material = SubResource("MatObstacle")
+size = Vector3(4, 0.5, 8)
+
+[node name="TestLevel" type="Node3D" unique_id=128382311]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1447961904]
+environment = SubResource("Env")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1332445440]
+transform = Transform3D(-0.47464967, -0.88001513, 0.017149786, -0.5309197, 0.30180693, 0.7918482, -0.7020203, 0.36675873, -0.61045533, 0, 10, 0)
+shadow_enabled = true
+
+[node name="Player" parent="." unique_id=60671047 instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 8)
+
+[node name="Geometry" type="Node3D" parent="." unique_id=979019783]
+
+[node name="Floor" type="StaticBody3D" parent="Geometry" unique_id=894366944]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Floor" unique_id=475878369]
+shape = SubResource("ShapeFloor")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/Floor" unique_id=637380935]
+mesh = SubResource("MeshFloor")
+
+[node name="WallNorth" type="StaticBody3D" parent="Geometry" unique_id=247473536]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -20.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/WallNorth" unique_id=1949411907]
+shape = SubResource("ShapeWallNS")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/WallNorth" unique_id=1467578077]
+mesh = SubResource("MeshWallNS")
+
+[node name="WallSouth" type="StaticBody3D" parent="Geometry" unique_id=659757100]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 20.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/WallSouth" unique_id=1737311154]
+shape = SubResource("ShapeWallNS")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/WallSouth" unique_id=164586634]
+mesh = SubResource("MeshWallNS")
+
+[node name="WallEast" type="StaticBody3D" parent="Geometry" unique_id=1707077133]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 3, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/WallEast" unique_id=36486668]
+shape = SubResource("ShapeWallEW")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/WallEast" unique_id=1626420313]
+mesh = SubResource("MeshWallEW")
+
+[node name="WallWest" type="StaticBody3D" parent="Geometry" unique_id=933739685]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 3, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/WallWest" unique_id=2110162193]
+shape = SubResource("ShapeWallEW")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/WallWest" unique_id=1019496703]
+mesh = SubResource("MeshWallEW")
+
+[node name="BoxLow" type="StaticBody3D" parent="Geometry" unique_id=750395039]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.5, -6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/BoxLow" unique_id=1964662923]
+shape = SubResource("ShapeBoxLow")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/BoxLow" unique_id=1235780954]
+mesh = SubResource("MeshBoxLow")
+
+[node name="BoxMid" type="StaticBody3D" parent="Geometry" unique_id=1883351466]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, -6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/BoxMid" unique_id=879581514]
+shape = SubResource("ShapeBoxMid")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/BoxMid" unique_id=212611591]
+mesh = SubResource("MeshBoxMid")
+
+[node name="BoxHigh" type="StaticBody3D" parent="Geometry" unique_id=1176617265]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, -6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/BoxHigh" unique_id=41697297]
+shape = SubResource("ShapeBoxHigh")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/BoxHigh" unique_id=944557740]
+mesh = SubResource("MeshBoxHigh")
+
+[node name="Pillar" type="StaticBody3D" parent="Geometry" unique_id=1566089433]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Pillar" unique_id=136203819]
+shape = SubResource("ShapePillar")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/Pillar" unique_id=531983344]
+mesh = SubResource("MeshPillar")
+
+[node name="Ramp" type="StaticBody3D" parent="Geometry" unique_id=1313534679]
+transform = Transform3D(1, 0, 0, 0, 0.9397, 0.342, 0, -0.342, 0.9397, 10, 1.4, -8)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Ramp" unique_id=1098762526]
+shape = SubResource("ShapeRamp")
+
+[node name="Visual" type="MeshInstance3D" parent="Geometry/Ramp" unique_id=1356052787]
+mesh = SubResource("MeshRamp")
+
+[node name="Dummies" type="Node3D" parent="." unique_id=982028930]
+
+[node name="TargetDummy1" parent="Dummies" unique_id=995473812 instance=ExtResource("2_dummy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 0)
+
+[node name="TargetDummy2" parent="Dummies" unique_id=1076594966 instance=ExtResource("2_dummy")]
+
+[node name="TargetDummy3" parent="Dummies" unique_id=1556790631 instance=ExtResource("2_dummy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)

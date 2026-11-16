@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://cgbfwi6motqnm"]
+
+[ext_resource type="Script" uid="uid://bxnla4ou0myub" path="res://scripts/weapons/melee_weapon.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://bgjv103vpdloq" path="res://assets/weapons/melee/pencil.glb" id="2_n8e2q"]
+[ext_resource type="PackedScene" uid="uid://c8yvwmp3ewt60" path="res://assets/arms/pencilArm.glb" id="3_4jbau"]
+[ext_resource type="Script" uid="uid://dwolq56grtq2e" path="res://scripts/player/arm_view.gd" id="4_armview"]
+
+[node name="Pencil" type="Node3D" unique_id=663177107]
+script = ExtResource("1_script")
+weapon_name = "Pencil"
+slot = 0
+damage = 35.0
+fire_interval = 0.35
+recoil_kick = 0.0
+recoil_recover = 10.0
+
+[node name="Visual" type="Node3D" parent="." unique_id=1795740813]
+transform = Transform3D(1.9493074, -0.37905702, 0.23773119, 0.37626913, 1.9637505, 0.045888558, -0.24211955, 0, 1.9852904, 0.27480087, -0.23037334, -0.4696806)
+
+[node name="Arm" parent="Visual" unique_id=1374722816 instance=ExtResource("3_4jbau")]
+script = ExtResource("4_armview")
+
+[node name="Grip" type="BoneAttachment3D" parent="Visual" unique_id=936665447]
+transform = Transform3D(1, 1.5646219e-07, 0.00014493657, -0.0001449287, 5.9604645e-08, 0.9999999, 1.2665987e-07, -0.9999999, -2.6466296e-09, 0, -0.0036000013, -0.049999997)
+bone_name = "grip.R"
+bone_idx = 17
+use_external_skeleton = true
+external_skeleton = NodePath("../Arm/ArmRig/Skeleton3D")
+
+[node name="PencilModel" parent="Visual/Grip" unique_id=669590034 instance=ExtResource("2_n8e2q")]
+transform = Transform3D(0, -6.437176e-09, 1.0000001, 1.0000001, 9.458745e-11, 7.450581e-09, -8.367351e-11, 1.0000001, -1.3954377e-08, -0.019158572, 0.0023364425, 0.0037226528)
