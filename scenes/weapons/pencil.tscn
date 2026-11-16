@@ -23,7 +23,7 @@ script = ExtResource("4_armview")
 [node name="Grip" type="BoneAttachment3D" parent="Visual" unique_id=936665447]
 transform = Transform3D(1, 1.5646219e-07, 0.00014493657, -0.0001449287, 5.9604645e-08, 0.9999999, 1.2665987e-07, -0.9999999, -2.6466296e-09, 0, -0.0036000013, -0.049999997)
 bone_name = "grip.R"
-bone_idx = 17
+bone_idx = 2
 use_external_skeleton = true
 external_skeleton = NodePath("../Arm/ArmRig/Skeleton3D")
 

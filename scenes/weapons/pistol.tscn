@@ -22,12 +22,12 @@ transform = Transform3D(1.9852406, -0.026605725, 0.24105553, 0.02019149, 1.99915
 [node name="Arm" parent="Visual" unique_id=1369602989 instance=ExtResource("3_arm")]
 script = ExtResource("5_armview")
 idle_animation = "pistol_idle"
-attack_animation = "pistol_trigger"
+attack_animation = ""
 
 [node name="Grip" type="BoneAttachment3D" parent="Visual" unique_id=443026880]
 transform = Transform3D(1.0000001, 8.940697e-08, 1.1455268e-07, -9.8953024e-08, -0.052335866, 0.9986295, -2.9802322e-08, -0.99862957, -0.05233594, -0.0040000062, -0.0119999945, -0.04099989)
 bone_name = "grip.R"
-bone_idx = 17
+bone_idx = 2
 use_external_skeleton = true
 external_skeleton = NodePath("../Arm/PistolArmRig/Skeleton3D")
 
