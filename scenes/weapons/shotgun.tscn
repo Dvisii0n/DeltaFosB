@@ -1,28 +1,46 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dvw5wqpmfh0lj"]
 
-[ext_resource type="Script" path="res://scripts/weapons/hitscan_weapon.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://du6mvt4fy3wgt" path="res://scripts/weapons/hitscan_weapon.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/effects/impact_marker.tscn" id="2_impact"]
-[sub_resource type="StandardMaterial3D" id="Mat"]
-albedo_color = Color(0.45, 0.28, 0.15, 1)
+[ext_resource type="PackedScene" uid="uid://doxamoi0p75f5" path="res://assets/arms/shotgunArm.glb" id="3_arm"]
+[ext_resource type="PackedScene" uid="uid://taxfvti50ac5" path="res://assets/weapons/firearms/shotgun.glb" id="4_gun"]
+[ext_resource type="Script" uid="uid://dwolq56grtq2e" path="res://scripts/player/arm_view.gd" id="5_armview"]
 
-[sub_resource type="BoxMesh" id="Mesh"]
-material = SubResource("Mat")
-size = Vector3(0.1, 0.1, 0.7)
-
-[node name="Shotgun" type="Node3D"]
+[node name="Shotgun" type="Node3D" unique_id=1177943966]
 script = ExtResource("1_script")
+pellets = 8
+spread_deg = 4.0
+max_range = 60.0
+impact_scene = ExtResource("2_impact")
 weapon_name = "Shotgun"
 slot = 2
 damage = 9.0
 fire_interval = 0.8
 ammo_type = "shells"
-recoil_kick = 0.18
-pellets = 8
-spread_deg = 4.0
-max_range = 60.0
-impact_scene = ExtResource("2_impact")
+crosshair = 1
+dual_hide_nodes = Array[NodePath]([NodePath("Visual/Arm/ShotgunArmRig/Skeleton3D/ShotgunArm_L")])
+dual_dip_depth = 0.9
+recoil_kick = 0.3
+recoil_pitch = 22.0
+recoil_recover = 7.0
 
-[node name="Visual" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -0.25, -0.55)
-mesh = SubResource("Mesh")
+[node name="Visual" type="Node3D" parent="." unique_id=1114759897]
+transform = Transform3D(1.4919995, 0.023701089, -0.15288468, 0.017991966, 1.4456549, 0.39969662, 0.1536612, -0.39939874, 1.4376594, 0.2986012, -0.318282, -0.269072)
 
+[node name="Arm" parent="Visual" unique_id=1554468408 instance=ExtResource("3_arm")]
+script = ExtResource("5_armview")
+idle_animation = "shotgun_idle"
+attack_animation = "shotgun_pump"
+
+[node name="Grip" type="BoneAttachment3D" parent="Visual" unique_id=2065225931]
+transform = Transform3D(0.999962, -0.00067315996, 0.008682903, -0.0086971335, -0.025338411, 0.99964094, -0.0004529804, -0.9996788, -0.025343373, -0.047188252, -0.01099734, -0.055800617)
+bone_name = "grip.R"
+bone_idx = 2
+use_external_skeleton = true
+external_skeleton = NodePath("../Arm/ShotgunArmRig/Skeleton3D")
+
+[node name="GunModel" parent="Visual/Grip" unique_id=408167612 instance=ExtResource("4_gun")]
+transform = Transform3D(0.9999999, 5.09026e-08, 8.239294e-08, 9.637733e-08, -0.3420199, -0.9396927, -1.392436e-09, 0.9396927, -0.3420198, 6.944174e-08, 0.02524999, 0.01679529)
+script = ExtResource("5_armview")
+idle_animation = ""
+attack_animation = "pump"

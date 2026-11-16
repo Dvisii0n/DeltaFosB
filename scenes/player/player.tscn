@@ -4,9 +4,10 @@
 [ext_resource type="Script" uid="uid://yxr26pci0etj" path="res://scripts/weapons/weapon_holder.gd" id="2_holder"]
 [ext_resource type="PackedScene" uid="uid://cgbfwi6motqnm" path="res://scenes/weapons/pencil.tscn" id="3_pencil"]
 [ext_resource type="PackedScene" uid="uid://cof1ny3ybx3ix" path="res://scenes/weapons/pistol.tscn" id="4_pistol"]
-[ext_resource type="PackedScene" path="res://scenes/weapons/shotgun.tscn" id="5_shotgun"]
-[ext_resource type="PackedScene" path="res://scenes/weapons/minigun.tscn" id="6_minigun"]
+[ext_resource type="PackedScene" uid="uid://dvw5wqpmfh0lj" path="res://scenes/weapons/shotgun.tscn" id="5_shotgun"]
+[ext_resource type="PackedScene" uid="uid://guunsw5eraix" path="res://scenes/weapons/minigun.tscn" id="6_minigun"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
+[ext_resource type="Script" uid="uid://bktfrm04yd1v8" path="res://scripts/ui/crosshair.gd" id="8_crosshair"]
 
 [sub_resource type="CapsuleShape3D" id="ShapeBody"]
 radius = 0.4
@@ -41,6 +42,8 @@ fov = 90.0
 
 [node name="WeaponHolder" type="Node3D" parent="Head/Camera3D" unique_id=571941363]
 script = ExtResource("2_holder")
+switch_down_time = 0.15
+switch_up_time = 0.22
 
 [node name="Pencil" parent="Head/Camera3D/WeaponHolder" unique_id=551865437 instance=ExtResource("3_pencil")]
 
@@ -52,20 +55,15 @@ script = ExtResource("2_holder")
 
 [node name="DebugHUD" type="CanvasLayer" parent="." unique_id=469531989]
 
-[node name="Crosshair" type="Label" parent="DebugHUD" unique_id=1978440882]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -20.0
-offset_right = 20.0
-offset_bottom = 20.0
-theme_override_font_sizes/font_size = 24
-text = "+"
-horizontal_alignment = 1
-vertical_alignment = 1
+[node name="Crosshair" type="Control" parent="DebugHUD" unique_id=1978440882]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("8_crosshair")
 
 [node name="WeaponLabel" type="Label" parent="DebugHUD" unique_id=1084791105]
 offset_left = 16.0

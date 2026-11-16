@@ -56,6 +56,7 @@ enum State { GROUND, AIR, SLIDE, SLAM, DASH }
 @onready var collision: CollisionShape3D = $CollisionShape3D
 @onready var speed_label: Label = $DebugHUD/SpeedLabel
 @onready var weapon_label: Label = $DebugHUD/WeaponLabel
+@onready var crosshair: Control = $DebugHUD/Crosshair
 @onready var weapon_holder: WeaponHolder = $Head/Camera3D/WeaponHolder
 
 var state := State.AIR
@@ -288,6 +289,7 @@ func _update_camera(delta: float, input_dir: Vector2) -> void:
 
 	# Lower the head while sliding.
 	var head_target := head_slide_y if state == State.SLIDE else head_stand_y
+	weapon_holder.sliding = state == State.SLIDE  # weapons can strike a pose (pistol: gangster grip)
 	head.position.y = lerpf(head.position.y, head_target, weight)
 
 	# Lean into strafes, lean harder while sliding.
@@ -311,6 +313,8 @@ func _update_hud() -> void:
 	]
 
 	var weapon := weapon_holder.current
+	crosshair.weapon = weapon  # the crosshair changes shape per weapon
+	crosshair.camera = camera
 	if weapon == null:
 		weapon_label.text = "No weapon"
 	elif weapon.ammo_type == "":

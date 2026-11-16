@@ -15,6 +15,9 @@ ammo_type = "light"
 recoil_kick = 0.06
 recoil_pitch = 6.0
 recoil_recover = 14.0
+slide_roll_deg = 80.0
+slide_pose_offset = Vector3(0.06, 0.08, 0)
+slide_pivot = NodePath("Visual/Grip/GunModel")
 
 [node name="Visual" type="Node3D" parent="." unique_id=2108325848]
 transform = Transform3D(1.9852406, -0.026605725, 0.24105553, 0.02019149, 1.9991581, 0.054358147, -0.24167804, -0.05152258, 1.9846752, 0.3511066, -0.31321254, -0.48141676)
@@ -25,7 +28,7 @@ idle_animation = "pistol_idle"
 attack_animation = ""
 
 [node name="Grip" type="BoneAttachment3D" parent="Visual" unique_id=443026880]
-transform = Transform3D(1.0000001, 8.940697e-08, 1.1455268e-07, -9.8953024e-08, -0.052335866, 0.9986295, -2.9802322e-08, -0.99862957, -0.05233594, -0.0040000062, -0.0119999945, -0.04099989)
+transform = Transform3D(0.99996203, -0.00067317486, 0.008682886, -0.008697165, -0.025338411, 0.99964124, -0.00045297295, -0.99967885, -0.025343388, -0.04718827, -0.010997355, -0.0558006)
 bone_name = "grip.R"
 bone_idx = 2
 use_external_skeleton = true

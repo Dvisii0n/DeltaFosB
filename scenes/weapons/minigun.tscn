@@ -1,41 +1,43 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://guunsw5eraix"]
 
-[ext_resource type="Script" path="res://scripts/weapons/hitscan_weapon.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://du6mvt4fy3wgt" path="res://scripts/weapons/hitscan_weapon.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/effects/impact_marker.tscn" id="2_impact"]
+[ext_resource type="PackedScene" uid="uid://b4cnj7440luky" path="res://assets/arms/minigunArm.glb" id="3_arm"]
+[ext_resource type="PackedScene" uid="uid://cvw82gc278u7o" path="res://assets/weapons/firearms/minigun.glb" id="4_gun"]
+[ext_resource type="Script" uid="uid://dwolq56grtq2e" path="res://scripts/player/arm_view.gd" id="5_armview"]
 
-[sub_resource type="StandardMaterial3D" id="MatBody"]
-albedo_color = Color(0.35, 0.4, 0.35, 1)
-
-[sub_resource type="BoxMesh" id="MeshBody"]
-material = SubResource("MatBody")
-size = Vector3(0.22, 0.22, 0.4)
-
-[sub_resource type="StandardMaterial3D" id="MatBarrel"]
-albedo_color = Color(0.15, 0.15, 0.15, 1)
-
-[sub_resource type="BoxMesh" id="MeshBarrel"]
-material = SubResource("MatBarrel")
-size = Vector3(0.14, 0.14, 0.5)
-
-[node name="Minigun" type="Node3D" node_paths=PackedStringArray("spin_node")]
+[node name="Minigun" type="Node3D" unique_id=2145320706 node_paths=PackedStringArray("spin_node")]
 script = ExtResource("1_script")
+spread_deg = 2.0
+max_range = 150.0
+impact_scene = ExtResource("2_impact")
+spin_up_time = 0.5
+spin_node = NodePath("Visual/Grip/GunModel/Minigun/Barrels")
 weapon_name = "Minigun"
 slot = 3
 damage = 7.0
 fire_interval = 0.05
 automatic = true
 ammo_type = "heavy"
+dual_hide_nodes = Array[NodePath]([NodePath("Visual/Arm/MinigunArmRig/Skeleton3D/MinigunArm_L")])
+dual_pose_offset = Vector3(0.1, -0.03, 0)
+dual_fire_together = true
 recoil_kick = 0.03
-spread_deg = 2.0
-max_range = 150.0
-impact_scene = ExtResource("2_impact")
-spin_up_time = 0.5
-spin_node = NodePath("Visual/Barrel")
 
-[node name="Visual" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, -0.3, -0.5)
-mesh = SubResource("MeshBody")
+[node name="Visual" type="Node3D" parent="." unique_id=1407663305]
+transform = Transform3D(1.3944473, -0.002125427, 0.12455263, 0.022860955, 1.3803883, -0.23238727, -0.12245508, 0.2334997, 1.3749485, 0.4187152, -0.5178298, -0.24836256)
 
-[node name="Barrel" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.45)
-mesh = SubResource("MeshBarrel")
+[node name="Arm" parent="Visual" unique_id=809015380 instance=ExtResource("3_arm")]
+script = ExtResource("5_armview")
+idle_animation = "minigun_idle"
+attack_animation = ""
+
+[node name="Grip" type="BoneAttachment3D" parent="Visual" unique_id=966954684]
+transform = Transform3D(0.99996203, -0.00067317486, 0.008682904, -0.008697135, -0.025338441, 0.999641, -0.0004529506, -0.9996788, -0.025343403, -0.04718831, -0.010997355, -0.05580061)
+bone_name = "grip.R"
+bone_idx = 2
+use_external_skeleton = true
+external_skeleton = NodePath("../Arm/MinigunArmRig/Skeleton3D")
+
+[node name="GunModel" parent="Visual/Grip" unique_id=987973061 instance=ExtResource("4_gun")]
+transform = Transform3D(0.9999998, 1.997705e-08, 9.563519e-08, 9.634823e-08, 2.343368e-07, -0.9999998, -4.629328e-10, 0.9999998, 2.320089e-07, -0.1049999, -1.393732e-06, -0.02999999)
