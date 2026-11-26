@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/melee_weapon.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="MatBody"]
+albedo_color = Color(1, 0.45, 0.05, 1)
+
+[sub_resource type="BoxMesh" id="MeshBody"]
+material = SubResource("MatBody")
+size = Vector3(0.18, 0.22, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="MatBar"]
+albedo_color = Color(0.7, 0.7, 0.75, 1)
+metallic = 0.6
+
+[sub_resource type="BoxMesh" id="MeshBar"]
+material = SubResource("MatBar")
+size = Vector3(0.05, 0.09, 0.6)
+
+[node name="Chainsaw" type="Node3D"]
+script = ExtResource("1_script")
+reach = 2.2
+hit_width = 1.2
+max_targets = 3
+weapon_name = "Chainsaw"
+blood_amount = 0.6
+camera_kick_deg = 0.12
+recoil_random_deg = 1.0
+slot = 0
+damage = 7.0
+fire_interval = 0.07
+automatic = true
+can_dual_wield = false
+recoil_kick = -0.015
+recoil_recover = 30.0
+
+[node name="Visual" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, -0.3, -0.55)
+
+[node name="Body" type="MeshInstance3D" parent="Visual"]
+mesh = SubResource("MeshBody")
+
+[node name="Bar" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, -0.45)
+mesh = SubResource("MeshBar")

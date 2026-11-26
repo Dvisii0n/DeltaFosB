@@ -12,6 +12,12 @@ extends Node3D
 @onready var animation_player: AnimationPlayer = find_child("AnimationPlayer", true, false)
 
 
+func _process(_delta: float) -> void:
+	# Arm / gun animations always play at real speed, matching the real-time fire rate.
+	if animation_player and Engine.time_scale > 0.0:
+		animation_player.speed_scale = 1.0 / Engine.time_scale
+
+
 func _ready() -> void:
 	if animation_player and animation_player.has_animation(idle_animation):
 		animation_player.play(idle_animation)

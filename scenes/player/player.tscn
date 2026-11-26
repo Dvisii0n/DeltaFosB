@@ -8,6 +8,24 @@
 [ext_resource type="PackedScene" uid="uid://guunsw5eraix" path="res://scenes/weapons/minigun.tscn" id="6_minigun"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
 [ext_resource type="Script" uid="uid://bktfrm04yd1v8" path="res://scripts/ui/crosshair.gd" id="8_crosshair"]
+[ext_resource type="Script" uid="uid://c4g5vgh23kw6m" path="res://scripts/components/health.gd" id="9_health"]
+[ext_resource type="Script" uid="uid://cebu3avphg4t2" path="res://scripts/ui/player_bars.gd" id="10_bars"]
+[ext_resource type="Script" uid="uid://c0buxxm7il5up" path="res://scripts/abilities/bullet_time.gd" id="11_bullet_time"]
+[ext_resource type="Script" uid="uid://cjqde1nao138v" path="res://scripts/upgrades/upgrades.gd" id="12_upgrades"]
+[ext_resource type="Script" uid="uid://ba4ghutyomd71" path="res://scripts/ui/upgrade_menu.gd" id="13_upmenu"]
+[ext_resource type="Script" uid="uid://dbtpulqx2eltu" path="res://scripts/ui/xp_bar.gd" id="14_xpbar"]
+[ext_resource type="Script" uid="uid://tisne8msxxy6" path="res://scripts/abilities/fury.gd" id="15_fury"]
+[ext_resource type="Script" path="res://scripts/ui/screen_blood.gd" id="16_screenblood"]
+[ext_resource type="Script" path="res://scripts/effects/post_fx.gd" id="17_postfx"]
+[ext_resource type="Shader" path="res://shaders/deltafosb.gdshader" id="18_deltafosb"]
+[ext_resource type="Shader" path="res://shaders/focus_vignette.gdshader" id="19_focus"]
+
+[sub_resource type="ShaderMaterial" id="FocusMat"]
+shader = ExtResource("19_focus")
+shader_parameter/strength = 0.0
+
+[sub_resource type="ShaderMaterial" id="DeltaFosBMat"]
+shader = ExtResource("18_deltafosb")
 
 [sub_resource type="CapsuleShape3D" id="ShapeBody"]
 radius = 0.4
@@ -53,6 +71,18 @@ switch_up_time = 0.22
 
 [node name="Minigun" parent="Head/Camera3D/WeaponHolder" unique_id=516673737 instance=ExtResource("6_minigun")]
 
+[node name="DeltaFosBFilter" type="CanvasLayer" parent="."]
+script = ExtResource("17_postfx")
+
+[node name="Filter" type="ColorRect" parent="DeltaFosBFilter"]
+material = SubResource("DeltaFosBMat")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
 [node name="DebugHUD" type="CanvasLayer" parent="." unique_id=469531989]
 
 [node name="Crosshair" type="Control" parent="DebugHUD" unique_id=1978440882]
@@ -80,5 +110,84 @@ offset_right = 416.0
 offset_bottom = 48.0
 theme_override_font_sizes/font_size = 20
 text = "Speed: 0.0 m/s | State: AIR"
+
+[node name="FuryTint" type="ColorRect" parent="DebugHUD" unique_id=1019703947]
+z_index = -1
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.05, 0.05, 0.2)
+
+[node name="BulletTimeTint" type="ColorRect" parent="DebugHUD" unique_id=1503576298]
+z_index = -1
+material = SubResource("FocusMat")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ScreenBlood" type="Control" parent="DebugHUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("16_screenblood")
+
+[node name="PlayerBars" type="Control" parent="DebugHUD" unique_id=1674885832]
+layout_mode = 3
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -122.0
+offset_right = 276.0
+offset_bottom = -16.0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("10_bars")
+
+[node name="XPBar" type="Control" parent="DebugHUD" unique_id=1333451698]
+layout_mode = 3
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -60.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("14_xpbar")
+
+[node name="Health" type="Node" parent="." unique_id=1748879181]
+script = ExtResource("9_health")
+max_armor = 100.0
+armor_absorb = 0.66
+start_with_full_armor = false
+
+[node name="Ability" type="Node" parent="." unique_id=621123889]
+script = ExtResource("11_bullet_time")
+power_name = "Bullet Time"
+
+[node name="Fury" type="Node" parent="." unique_id=2003905019]
+script = ExtResource("15_fury")
+power_name = "Fury"
+key_hint = "E"
+duration = 10.0
+
+[node name="Upgrades" type="Node" parent="." unique_id=1415229941]
+script = ExtResource("12_upgrades")
+
+[node name="UpgradeMenu" type="CanvasLayer" parent="." unique_id=601901365]
+script = ExtResource("13_upmenu")
 
 [node name="PauseMenu" parent="." unique_id=157080777 instance=ExtResource("7_pause")]

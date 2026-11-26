@@ -13,6 +13,12 @@ spread_deg = 4.0
 max_range = 60.0
 impact_scene = ExtResource("2_impact")
 weapon_name = "Shotgun"
+explode_on_kill = true
+blood_amount = 0.7
+flash_size = 0.6
+flash_light_energy = 10.0
+camera_kick_deg = 4.0
+recoil_random_deg = 5.0
 slot = 2
 damage = 9.0
 fire_interval = 0.8
@@ -20,9 +26,9 @@ ammo_type = "shells"
 crosshair = 1
 dual_hide_nodes = Array[NodePath]([NodePath("Visual/Arm/ShotgunArmRig/Skeleton3D/ShotgunArm_L")])
 dual_dip_depth = 0.9
-recoil_kick = 0.3
-recoil_pitch = 22.0
-recoil_recover = 7.0
+recoil_kick = 0.42
+recoil_pitch = 34.0
+recoil_recover = 6.0
 
 [node name="Visual" type="Node3D" parent="." unique_id=1114759897]
 transform = Transform3D(1.4919995, 0.023701089, -0.15288468, 0.017991966, 1.4456549, 0.39969662, 0.1536612, -0.39939874, 1.4376594, 0.2986012, -0.318282, -0.269072)

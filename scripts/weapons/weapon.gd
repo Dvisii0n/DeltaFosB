@@ -18,6 +18,8 @@ enum CrosshairStyle { CROSS, CIRCLE }
 @export var ammo_per_shot := 1
 @export var crosshair: CrosshairStyle = CrosshairStyle.CROSS  ## Look of the crosshair while this weapon is held.
 @export var can_dual_wield := true      ## false = never held in both hands.
+@export var blood_amount := 1.0         ## How much blood each hit on an enemy sprays (1 = normal).
+@export var explode_on_kill := false   ## Killing an enemy with this bursts it into a blood explosion (shotgun).
 
 @export_group("Dual Wield")
 ## Nodes hidden while dual wielding (e.g. the shotgun's pump arm: nobody has 4 arms).
@@ -39,16 +41,19 @@ enum CrosshairStyle { CROSS, CIRCLE }
 @export var recoil_kick := 0.08        ## How far Visual jumps back per shot (negative = lunges forward).
 @export var recoil_pitch := 0.0        ## Degrees Visual tilts up per shot (muzzle flip).
 @export var recoil_recover := 12.0     ## How fast Visual returns to rest.
+@export var recoil_random_deg := 0.0   ## Random twist (sideways + roll) per shot, so shots don't all look the same.
+@export var camera_kick_deg := 0.0     ## The view punches up this much per shot, then settles (aim isn't changed).
 
 @export_group("Equip")
 @export var equip_drop := 0.7          ## How far (m) Visual drops below its rest spot when switching weapons.
 @export var equip_tilt := 35.0         ## Degrees it tips down while lowered.
 
-@export_group("Slide Pose")
-## Degrees the gun rolls onto its side while the player slides ("gangster grip").
+@export_group("Gangster Grip (bullet time)")
+## Degrees the gun rolls onto its side while bullet time is active ("gangster grip").
+## (Named "slide_..." because it used to play on slides.)
 ## Positive = top of the gun tips toward the screen centre. 0 = no pose.
 @export var slide_roll_deg := 0.0
-@export var slide_pose_offset := Vector3.ZERO  ## Extra move while sliding (camera space, metres).
+@export var slide_pose_offset := Vector3.ZERO  ## Extra move while in the pose (camera space, metres).
 @export var slide_pose_speed := 8.0            ## How fast it gets into / out of the pose.
 @export var slide_pivot: NodePath              ## The gun rolls around this node (e.g. the gun model). Empty = Visual's origin.
 
@@ -76,10 +81,12 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# Weapons always run on real time: bullet time never slows your fire rate (or the gun's animation).
+	delta = WorldTime.real_delta(delta)
 	cooldown -= delta
 	if _dip_left > 0.0:
 		_dip_left -= delta
-	var wants_pose := 1.0 if (holder and holder.sliding and slide_roll_deg != 0.0) else 0.0
+	var wants_pose := 1.0 if (holder and holder.gangster_grip and slide_roll_deg != 0.0) else 0.0
 	_slide_pose = move_toward(_slide_pose, wants_pose, slide_pose_speed * delta)
 	if visual:
 		if equip_amount > 0.0:
@@ -139,7 +146,7 @@ func can_fire() -> bool:
 func _do_fire() -> void:
 	# "+=" keeps leftover time, so fire rate stays exact even when it doesn't
 	# divide evenly into frames (e.g. minigun at 20 shots/s).
-	cooldown = maxf(cooldown, 0.0) + fire_interval
+	cooldown = maxf(cooldown, 0.0) + effective_interval()
 	if ammo_type != "":
 		holder.use_ammo(ammo_type, ammo_per_shot)
 	_fire()
@@ -150,8 +157,15 @@ func _do_fire() -> void:
 		# Flip the muzzle up (around the camera's right axis, so it works however Visual
 		# is turned), on top of whatever pose the gun is in.
 		visual.quaternion = _target_rotation(recoil_pitch)
+		if recoil_random_deg > 0.0:
+			# Camera-space twist: a little sideways (yaw) and a little roll, random each shot.
+			var r := deg_to_rad(recoil_random_deg)
+			var twist := Quaternion(Vector3.UP, randf_range(-r, r)) * Quaternion(Vector3.BACK, randf_range(-r, r))
+			visual.quaternion = twist * visual.quaternion
+	if holder and camera_kick_deg > 0.0:
+		holder.add_camera_kick(camera_kick_deg)
 	if dual_wielded and dual_dip_depth > 0.0:
-		_dip_left = fire_interval
+		_dip_left = effective_interval()
 
 
 ## Override in subclasses: what actually happens when the weapon fires.
@@ -193,21 +207,56 @@ func _equip_curve() -> float:
 
 ## 0 = at rest, 1 = fully down. Shape over the dip: wait, go down, stay, come back up.
 func _dip_amount() -> float:
-	var elapsed := fire_interval - _dip_left
+	var elapsed := effective_interval() - _dip_left
 	var down := smoothstep(dual_dip_delay, dual_dip_delay + dual_dip_down_time, elapsed)
-	var up_end := fire_interval - 0.08  # be back up a moment before the next shot
+	var up_end := effective_interval() - 0.08  # be back up a moment before the next shot
 	var up := 1.0 - smoothstep(up_end - dual_dip_up_time, up_end, elapsed)
 	return minf(down, up)
 
 
 # --- Helpers for subclasses ------------------------------------------------
 
+## Blood on enemy hits, and the shotgun's blood explosion on kills.
+func _bleed(target: Node, health: Health, was_alive: bool, hit_pos: Vector3, hit_dir: Vector3) -> void:
+	if not target.is_in_group("enemies") or blood_amount <= 0.0:
+		return
+	var root := get_tree().current_scene
+	var body := target as Node3D
+	if hit_pos == Vector3.INF:
+		hit_pos = body.global_position + Vector3.UP * 1.1
+	if hit_dir == Vector3.ZERO and holder and holder.camera:
+		hit_dir = -holder.camera.global_basis.z
+	Blood.hit(root, hit_pos, hit_dir, blood_amount)
+	if explode_on_kill and was_alive and health.is_dead:
+		Blood.explode(root, body.global_position + Vector3.UP * 1.0)
+
+
+## Seconds between attacks after fire rate upgrades.
+func effective_interval() -> float:
+	return fire_interval / (holder.total_fire_rate_mult() if holder else 1.0)
+
+
+## Spread after upgrades (the crosshair uses this too). 0 for weapons without spread.
+func effective_spread() -> float:
+	return 0.0
+
+
 ## Damages whatever was hit, if it has a "Health" child. Returns true if it did.
-func deal_damage(target: Object, amount: float) -> bool:
+## Damage upgrades and critical hits are applied here, so every weapon gets them.
+## `hit_pos` / `hit_dir`: where the hit landed and which way the shot was going (for blood).
+func deal_damage(target: Object, amount: float, hit_pos := Vector3.INF, hit_dir := Vector3.ZERO) -> bool:
 	if not target is Node:
 		return false
 	var health := (target as Node).get_node_or_null("Health") as Health
-	if health:
-		health.take_damage(amount)
-		return true
-	return false
+	if health == null:
+		return false
+	if holder:
+		amount *= holder.damage_multiplier(weapon_name)
+		if randf() < holder.crit_chance:
+			amount *= 2.0
+	var was_alive := not health.is_dead
+	health.take_damage(amount)
+	_bleed(target as Node, health, was_alive, hit_pos, hit_dir)
+	if holder and holder.owner_body and holder.owner_body.has_method("on_damage_dealt"):
+		holder.owner_body.on_damage_dealt(amount)
+	return true

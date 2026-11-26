@@ -8,7 +8,7 @@ enum State { GROUND, AIR, SLIDE, SLAM, DASH }
 @export var mouse_sensitivity := 0.002
 
 @export_group("Movement")
-@export var move_speed := 12.0         ## Top running speed (m/s).
+@export var move_speed := 10.0         ## Top running speed (m/s).
 @export var ground_accel := 90.0       ## How fast you reach top speed.
 @export var ground_friction := 70.0    ## How fast you stop when you let go.
 @export var air_accel := 30.0          ## Steering strength while airborne.
@@ -37,6 +37,7 @@ enum State { GROUND, AIR, SLIDE, SLAM, DASH }
 @export var wall_jump_up := 9.0
 @export var wall_jump_push := 10.0
 @export var max_wall_jumps := 3
+@export var max_air_jumps := 0        ## Jumps allowed in mid-air (Double Jump upgrade).
 
 @export_group("Slam")
 @export var slam_speed := 40.0
@@ -58,6 +59,25 @@ enum State { GROUND, AIR, SLIDE, SLAM, DASH }
 @onready var weapon_label: Label = $DebugHUD/WeaponLabel
 @onready var crosshair: Control = $DebugHUD/Crosshair
 @onready var weapon_holder: WeaponHolder = $Head/Camera3D/WeaponHolder
+@onready var health: Health = $Health
+@onready var player_bars: Control = $DebugHUD/PlayerBars
+@onready var ability: Ability = $Ability
+@onready var bullet_time_tint: ColorRect = $DebugHUD/BulletTimeTint
+@onready var upgrades: Upgrades = $Upgrades
+@onready var fury: Fury = $Fury
+@onready var fury_tint: ColorRect = $DebugHUD/FuryTint
+@onready var screen_blood: Control = $DebugHUD/ScreenBlood
+@onready var xp_bar: Control = $DebugHUD/XPBar
+
+@export_group("Upgrade Effects")
+@export var regen_delay := 3.0         ## Seconds without damage before Regen kicks in.
+@export var magnet_pull_speed := 14.0  ## How fast pickups fly to you (Pickup Magnet upgrade).
+@export var slam_wave_radius := 4.0    ## Ground Pound upgrade reach.
+@export var focus_fade_time := 0.25    ## Seconds for the bullet time vignette to close in / open up.
+@export var evasion_full_speed := 20.0 ## Speed (m/s) where the Evasive upgrade's dodge chance is full.
+
+@export_group("Interact")
+@export var interact_range := 3.0      ## How far away you can press buttons with E.
 
 var state := State.AIR
 var coyote_timer := 0.0
@@ -69,6 +89,11 @@ var slide_current_speed := 0.0
 var dash_charges := 0.0                # Float so it can refill smoothly.
 var dash_timer := 0.0
 var dash_direction := Vector3.ZERO
+var air_jumps_left := 0
+var _focus_tween: Tween
+var speed_boost_time_left := 0.0      # Speed pickup: seconds left.
+var _speed_boost_mult := 1.0
+var _since_damage := 999.0            # Seconds since we were last hurt (for Regen).
 
 
 func _ready() -> void:
@@ -76,6 +101,16 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	camera.fov = base_fov
 	dash_charges = max_dash_charges
+	health.died.connect(_on_died)
+	player_bars.health = health
+	player_bars.ability = ability
+	player_bars.fury = fury
+	fury.started.connect(func(): fury_tint.visible = true)
+	fury.stopped.connect(func(): fury_tint.visible = false)
+	xp_bar.upgrades = upgrades
+	health.damaged.connect(_on_hurt)
+	ability.started.connect(func(): _fade_focus(1.0))
+	ability.stopped.connect(func(): _fade_focus(0.0))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -86,14 +121,144 @@ func _unhandled_input(event: InputEvent) -> void:
 		head.rotation.x = clampf(head.rotation.x, deg_to_rad(-89.0), deg_to_rad(89.0))
 	elif event.is_action_pressed("capture_mouse"):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	elif event.is_action_pressed("interact"):
+		# E presses a button if you're looking at one, otherwise it triggers Fury.
+		if not _interact():
+			fury.activate()   # Does nothing until the Fury bar is full.
+	elif event.is_action_pressed("ability"):
+		ability.activate()   # Does nothing until the bar is full.
+
+
+## Press whatever you're looking at (if it has a press() function, like the spawn buttons).
+## Returns true if something was pressed.
+func _interact() -> bool:
+	var from := camera.global_position
+	var query := PhysicsRayQueryParameters3D.create(from, from - camera.global_basis.z * interact_range)
+	query.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if not hit.is_empty() and hit.collider.has_method("press"):
+		hit.collider.press()
+		return true
+	return false
+
+
+## Called by armor pickups. Returns how much armor was added (0 = already full).
+func add_armor(amount: float) -> float:
+	return health.add_armor(amount * upgrades.armor_pickup_mult)
+
+
+## Called by health packs. Returns how much was healed (0 = already full).
+func heal(amount: float) -> float:
+	return health.heal(amount * upgrades.heal_mult)
+
+
+## Called by enemies when they die: XP, ability charge and kill-based upgrades.
+func on_enemy_killed(enemy: Enemy) -> void:
+	upgrades.add_xp(enemy.xp_value)
+	ability.add_charge(enemy.ability_charge * upgrades.ability_charge_mult)
+	if upgrades.lifesteal > 0.0:
+		health.heal(upgrades.lifesteal)
+	if upgrades.bt_extend_per_kill > 0.0:
+		ability.extend(upgrades.bt_extend_per_kill)
+
+
+## Called by our weapons whenever they hurt something ("Rage" upgrade).
+func on_damage_dealt(amount: float) -> void:
+	if upgrades.charge_per_10_damage > 0.0:
+		ability.add_charge(amount / 10.0 * upgrades.charge_per_10_damage)
+
+
+## Speed pickup: move faster for a while (a new pickup resets the timer).
+func give_speed_boost(duration: float, mult: float) -> void:
+	speed_boost_time_left = maxf(speed_boost_time_left, duration)
+	_speed_boost_mult = mult
+
+
+func speed_boost_mult() -> float:
+	return _speed_boost_mult if speed_boost_time_left > 0.0 else 1.0
+
+
+## Bullet time focus vignette: eases the screen edges in (1) or out (0).
+## Real time, so the slow motion doesn't slow the fade itself.
+func _fade_focus(target: float) -> void:
+	var mat := bullet_time_tint.material as ShaderMaterial
+	if _focus_tween:
+		_focus_tween.kill()
+	_focus_tween = create_tween().set_ignore_time_scale(true)
+	_focus_tween.tween_method(func(v: float): mat.set_shader_parameter("strength", v),
+		mat.get_shader_parameter("strength"), target, focus_fade_time)
+
+
+## Getting hurt splatters blood on the screen edges (bigger hit = more).
+func _on_hurt(amount: float, _current: float) -> void:
+	_since_damage = 0.0
+	splash_screen(amount / 12.0)
+
+
+## Blood on the screen (edges only, the centre stays clear). Also called by Blood when gore
+## happens right next to you.
+func splash_screen(intensity: float) -> void:
+	screen_blood.splash(intensity)
+
+
+## True while the chainsaw (Chainsaw upgrade) is in your hands. Used by "Rip and Tear".
+func is_chainsawing() -> bool:
+	return weapon_holder.current != null and weapon_holder.current.weapon_name == "Chainsaw"
+
+
+## "Evasive" upgrade: chance an enemy bullet misses, bigger the faster you move
+## (full chance at evasion_full_speed and above).
+func dodges_bullet() -> bool:
+	if upgrades.evasion <= 0.0:
+		return false
+	var speed_factor := clampf(velocity.length() / evasion_full_speed, 0.0, 1.0)
+	return randf() < upgrades.evasion * speed_factor
+
+
+## Called by the dual wield power-up.
+func give_dual_wield(duration: float) -> void:
+	weapon_holder.give_dual_wield(duration + upgrades.dual_duration_bonus)
+
+
+## Regen and pickup magnet upgrades.
+func _update_upgrade_effects(delta: float) -> void:
+	_since_damage += delta
+	speed_boost_time_left = maxf(speed_boost_time_left - delta, 0.0)
+	if upgrades.regen_per_second > 0.0 and _since_damage >= regen_delay:
+		health.heal(upgrades.regen_per_second * delta)
+	if upgrades.magnet_range > 0.0:
+		var center := global_position + Vector3.UP * 0.5
+		for pickup in get_tree().get_nodes_in_group("pickups"):
+			var p := pickup as Node3D
+			if p.visible and p.global_position.distance_to(center) <= upgrades.magnet_range:
+				p.global_position = p.global_position.move_toward(center, magnet_pull_speed * delta)
+
+
+## Ground Pound upgrade: landing a slam hurts enemies around you.
+func _slam_shockwave() -> void:
+	if upgrades.slam_damage <= 0.0:
+		return
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if enemy.global_position.distance_to(global_position) <= slam_wave_radius:
+			enemy.health.take_damage(upgrades.slam_damage)
+
+
+## Placeholder death: restart the level.
+func _on_died() -> void:
+	get_tree().reload_current_scene.call_deferred()
 
 
 func _physics_process(delta: float) -> void:
+	# Bullet time slows `delta` for everyone. With Sandevistan we turn it back into real time.
+	var time_mult := WorldTime.player_time_mult()
+	delta *= time_mult
+
 	# WASD -> a direction in world space, relative to where the player faces.
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var wish_dir := (transform.basis * Vector3(input_dir.x, 0.0, input_dir.y)).normalized()
 
 	_update_timers(delta)
+	_update_upgrade_effects(delta)
 
 	# Dash works from any state except mid-dash.
 	if Input.is_action_just_pressed("dash") and state != State.DASH and dash_charges >= 1.0:
@@ -111,7 +276,10 @@ func _physics_process(delta: float) -> void:
 		State.DASH:
 			_process_dash(delta)
 
+	# move_and_slide() uses the slowed physics step, so speed the move up to match (Sandevistan).
+	velocity *= time_mult
 	move_and_slide()
+	velocity /= time_mult
 	_update_camera(delta, input_dir)
 	_update_hud()
 
@@ -132,6 +300,7 @@ func _update_timers(delta: float) -> void:
 	if is_on_floor():
 		coyote_timer = coyote_time
 		wall_jumps_left = max_wall_jumps
+		air_jumps_left = max_air_jumps
 	else:
 		coyote_timer -= delta
 
@@ -152,7 +321,7 @@ func _process_ground(delta: float, wish_dir: Vector3) -> void:
 		return
 
 	# Snappy acceleration toward the target speed; strong friction when no input.
-	var target := wish_dir * move_speed
+	var target := wish_dir * move_speed * speed_boost_mult()
 	var rate := ground_accel if wish_dir != Vector3.ZERO else ground_friction
 	var horizontal := _horizontal_velocity().move_toward(target, rate * delta)
 	velocity.x = horizontal.x
@@ -177,13 +346,18 @@ func _process_air(delta: float, wish_dir: Vector3) -> void:
 		if is_on_wall() and wall_jumps_left > 0:
 			_wall_jump()
 			return
+		if air_jumps_left > 0:   # Double Jump upgrade.
+			velocity.y = jump_velocity
+			air_jumps_left -= 1
+			jump_buffer_timer = 0.0
+			return
 
 	# Air control: steer freely, but never lose speed gained from slides/slams.
 	if wish_dir != Vector3.ZERO:
 		var horizontal := _horizontal_velocity()
 		var old_speed := horizontal.length()
 		horizontal += wish_dir * air_accel * delta
-		var speed_cap := maxf(old_speed, move_speed)
+		var speed_cap := maxf(old_speed, move_speed * speed_boost_mult())
 		horizontal = horizontal.limit_length(speed_cap)
 		velocity.x = horizontal.x
 		velocity.z = horizontal.z
@@ -215,6 +389,7 @@ func _process_slam() -> void:
 	if is_on_floor():
 		state = State.GROUND
 		slam_bounce_timer = slam_bounce_window
+		_slam_shockwave()
 
 
 func _process_dash(delta: float) -> void:
@@ -289,7 +464,7 @@ func _update_camera(delta: float, input_dir: Vector2) -> void:
 
 	# Lower the head while sliding.
 	var head_target := head_slide_y if state == State.SLIDE else head_stand_y
-	weapon_holder.sliding = state == State.SLIDE  # weapons can strike a pose (pistol: gangster grip)
+	weapon_holder.sliding = state == State.SLIDE  # no walking bob while sliding
 	head.position.y = lerpf(head.position.y, head_target, weight)
 
 	# Lean into strafes, lean harder while sliding.
@@ -325,6 +500,11 @@ func _update_hud() -> void:
 			weapon_holder.ammo.get(weapon.ammo_type, 0),
 			weapon_holder.max_ammo.get(weapon.ammo_type, 0),
 		]
+
+	if speed_boost_time_left > 0.0:
+		weapon_label.text += " | SPEED %ds" % ceili(speed_boost_time_left)
+	if weapon_holder.dual_wield_time_left > 0.0:
+		weapon_label.text += " | DUAL WIELD %ds" % ceili(weapon_holder.dual_wield_time_left)
 
 
 ## Called by the pause menu's FOV slider.

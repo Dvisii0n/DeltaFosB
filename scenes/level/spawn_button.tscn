@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/level/spawn_button.gd" id="1_script"]
+
+[sub_resource type="BoxShape3D" id="Shape"]
+size = Vector3(1, 1, 0.2)
+
+[sub_resource type="BoxMesh" id="Mesh"]
+size = Vector3(1, 1, 0.2)
+
+[node name="SpawnButton" type="StaticBody3D"]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Shape")
+
+[node name="Visual" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0.11)
+pixel_size = 0.008
+font_size = 36
+outline_size = 8
+text = "[E] Spawn"

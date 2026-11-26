@@ -15,6 +15,10 @@ extends CanvasLayer
 @onready var fov_slider: HSlider = $Center/Settings/FovRow/FovSlider
 @onready var fov_value: Label = $Center/Settings/FovRow/FovValue
 @onready var dual_wield_check: CheckBox = $Center/Settings/DualWieldCheck
+@onready var health_bars_check: CheckBox = $Center/Settings/HealthBarsCheck
+@onready var armor_bars_check: CheckBox = $Center/Settings/ArmorBarsCheck
+@onready var fullscreen_check: CheckBox = $Center/Settings/FullscreenCheck
+@onready var filter_check: CheckBox = $Center/Settings/FilterCheck
 
 
 func _ready() -> void:
@@ -27,11 +31,17 @@ func _ready() -> void:
 	fov_slider.max_value = max_fov
 	fov_slider.value_changed.connect(_on_fov_changed)
 	dual_wield_check.toggled.connect(_on_dual_wield_toggled)
+	health_bars_check.toggled.connect(func(on: bool): GameSettings.show_health_bars = on)
+	armor_bars_check.toggled.connect(func(on: bool): GameSettings.show_armor_bars = on)
+	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
+	filter_check.toggled.connect(func(on: bool): GameSettings.deltafosb_filter = on)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("pause"):
 		return
+	if get_tree().paused and not visible:
+		return   # Something else paused the game (the level-up screen).
 	if not visible:
 		open()
 	elif settings_page.visible:
@@ -50,6 +60,10 @@ func open() -> void:
 	var holder := _weapon_holder()
 	if holder:
 		dual_wield_check.set_pressed_no_signal(holder.dual_wield)
+	health_bars_check.set_pressed_no_signal(GameSettings.show_health_bars)
+	armor_bars_check.set_pressed_no_signal(GameSettings.show_armor_bars)
+	filter_check.set_pressed_no_signal(GameSettings.deltafosb_filter)
+	fullscreen_check.set_pressed_no_signal(DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 	show()
 	_show_main()
@@ -86,6 +100,15 @@ func _on_dual_wield_toggled(on: bool) -> void:
 	var holder := _weapon_holder()
 	if holder:
 		holder.dual_wield = on
+
+
+## Borderless "windowed fullscreen" (covers the screen, alt-tab friendly). Off = the normal window
+## at the project's default size.
+func _on_fullscreen_toggled(on: bool) -> void:
+	if on:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 
 
 func _quit() -> void:

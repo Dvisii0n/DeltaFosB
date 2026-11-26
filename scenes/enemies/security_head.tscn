@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://e6rynov3olyn"]
+
+[ext_resource type="Script" uid="uid://nhfmgcl32e7c" path="res://scripts/enemies/enemy.gd" id="1_enemy"]
+[ext_resource type="Script" uid="uid://c4g5vgh23kw6m" path="res://scripts/components/health.gd" id="2_health"]
+[ext_resource type="Script" uid="uid://u0ykadgxdxej" path="res://scripts/enemies/enemy_bars.gd" id="3_bars"]
+
+[sub_resource type="BoxShape3D" id="Shape"]
+size = Vector3(0.8, 1.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="MatBody"]
+albedo_color = Color(0.1, 0.1, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="MeshBody"]
+material = SubResource("MatBody")
+size = Vector3(0.8, 1.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="MatFace"]
+albedo_color = Color(0.8, 0.1, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="MeshFace"]
+material = SubResource("MatFace")
+size = Vector3(0.5, 0.15, 0.1)
+
+[node name="SecurityHead" type="CharacterBody3D" unique_id=959874947]
+script = ExtResource("1_enemy")
+xp_value = 100.0
+behavior = 2
+move_speed = 1.2
+turn_speed = 4.0
+hold_pause_time = 0.5
+attack_range = 25.0
+attack_damage = 3.0
+spread_deg = 5.0
+aim_follow_speed = 5.0
+attack_windup = 1.0
+attack_interval = 0.08
+burst_count = 0
+attack_hold_time = 2.5
+attack_cooldown = 2.0
+lock_aim_on_warning = false
+armor_drop_chance = 0.8
+health_drop_amount = 60.0
+dual_wield_drop_chance = 0.25
+speed_drop_chance = 0.08
+ability_charge = 0.4
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=969686811]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("Shape")
+
+[node name="Visual" type="MeshInstance3D" parent="." unique_id=1888247050]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("MeshBody")
+
+[node name="Face" type="MeshInstance3D" parent="Visual" unique_id=229465744]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -0.42)
+mesh = SubResource("MeshFace")
+
+[node name="Muzzle" type="Marker3D" parent="." unique_id=604356333]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 1.3, -0.55)
+
+[node name="Health" type="Node" parent="." unique_id=483874755]
+script = ExtResource("2_health")
+max_health = 250.0
+max_armor = 200.0
+armor_absorb = 0.8
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1322666825]
+path_desired_distance = 0.5
+target_desired_distance = 0.6
+
+[node name="Bars" type="Node3D" parent="." unique_id=1300125445]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.15, 0)
+script = ExtResource("3_bars")

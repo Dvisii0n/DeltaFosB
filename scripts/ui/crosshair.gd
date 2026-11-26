@@ -29,7 +29,7 @@ func _draw() -> void:
 
 ## How many pixels the weapon's spread cone covers on screen.
 func _circle_radius() -> float:
-	var spread: float = weapon.get("spread_deg") if weapon.get("spread_deg") != null else 0.0
+	var spread: float = weapon.effective_spread()
 	if camera == null or spread <= 0.0:
 		return min_circle_radius
 	var half_height := get_viewport_rect().size.y / 2.0

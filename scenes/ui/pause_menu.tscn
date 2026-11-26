@@ -92,6 +92,26 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Dual Wield (test)"
 
+[node name="HealthBarsCheck" type="CheckBox" parent="Center/Settings"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Enemy Health Bars"
+
+[node name="ArmorBarsCheck" type="CheckBox" parent="Center/Settings"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Enemy Armor Bars"
+
+[node name="FullscreenCheck" type="CheckBox" parent="Center/Settings"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Windowed Fullscreen"
+
+[node name="FilterCheck" type="CheckBox" parent="Center/Settings"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "DeltaFosB Filter"
+
 [node name="BackButton" type="Button" parent="Center/Settings"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24

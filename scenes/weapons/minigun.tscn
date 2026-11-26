@@ -14,6 +14,15 @@ impact_scene = ExtResource("2_impact")
 spin_up_time = 0.5
 spin_node = NodePath("Visual/Grip/GunModel/Minigun/Barrels")
 weapon_name = "Minigun"
+blood_amount = 0.8
+flash_size = 0.45
+flash_light_energy = 6.0
+flash_time = 0.03
+flash_chance = 0.55
+flash_stretch = 0.6
+camera_kick_deg = 0.35
+recoil_random_deg = 1.5
+recoil_pitch = 2.5
 slot = 3
 damage = 7.0
 fire_interval = 0.05
@@ -22,7 +31,7 @@ ammo_type = "heavy"
 dual_hide_nodes = Array[NodePath]([NodePath("Visual/Arm/MinigunArmRig/Skeleton3D/MinigunArm_L")])
 dual_pose_offset = Vector3(0.1, -0.03, 0)
 dual_fire_together = true
-recoil_kick = 0.03
+recoil_kick = 0.05
 
 [node name="Visual" type="Node3D" parent="." unique_id=1407663305]
 transform = Transform3D(1.3944473, -0.002125427, 0.12455263, 0.022860955, 1.3803883, -0.23238727, -0.12245508, 0.2334997, 1.3749485, 0.4187152, -0.5178298, -0.24836256)
